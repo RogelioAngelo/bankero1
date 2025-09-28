@@ -8,11 +8,26 @@
     </style>
 
     <main class="pt-90">
-        <div class="mb-4 pb-4"></div>
-        <section class="shop-checkout container">
-            <h2 class="page-title">Cart</h2>
+        <div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
+            <div class="container">
+                <h1 class="page-title">Shopping Cart<span>Shop</span></h1>
+            </div><!-- End .container -->
+        </div>
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <div class="container">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+                </ol>
+            </div><!-- End .container -->
+        </nav>
 
-            <div class="checkout-steps">
+        <div class="mb-1 pb-1"></div>
+        <section class="shop-checkout container">
+
+
+            {{-- <div class="checkout-steps mb-2">
                 <a href="{{ route('cart.index') }}" class="checkout-steps__item active">
                     <span class="checkout-steps__item-number">01</span>
                     <span class="checkout-steps__item-title">
@@ -34,202 +49,249 @@
                         <em>Review And Submit Your Order</em>
                     </span>
                 </a>
-            </div>
+            </div> --}}
 
-            <div class="shopping-cart">
-                @if ($items->count() > 0)
-                    <div class="cart-table__wrapper">
-                        <table class="cart-table">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th></th>
-                                    <th>Price</th>
-                                    <th>Quantity</th>
-                                    <th>Subtotal</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($items as $item)
-                                    <tr>
-                                        <td>
-                                            <div class="shopping-cart__product-item">
-                                                <img loading="lazy"
-                                                    src="{{ asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
-                                                    width="120" height="120" alt="{{ $item->name }}" />
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="shopping-cart__product-item__detail">
-                                                <h4>{{ $item->name }}</h4>
-                                                <ul class="shopping-cart__product-item__options">
-                                                    <li>Color: {{ $item->options->color ?? 'Default' }}</li>
-                                                    <li>Size: {{ $item->options->size ?? 'Default' }}</li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="shopping-cart__product-price">₱{{ $item->price }}</span>
-                                        </td>
-                                        <td>
-                                            <div class="qty-control position-relative">
-                                                <input type="number" name="quantity" value="{{ $item->qty }}"
-                                                    min="1" class="qty-control__number text-center">
-                                                <form method="POST"
-                                                    action="{{ route('cart.qty.decrease', ['rowId' => $item->rowId]) }}">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <div class="qty-control__reduce">-</div>
-                                                </form>
 
-                                                <form method="POST"
-                                                    action="{{ route('cart.qty.increase', ['rowId' => $item->rowId]) }}">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <div class="qty-control__increase">+</div>
-                                                </form>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="shopping-cart__subtotal">₱{{ $item->subtotal }}</span>
-                                        </td>
-                                        <td>
-                                            <form method="POST"
-                                                action="{{ route('cart.item.remove', ['rowId' => $item->rowId]) }}">
+
+
+
+
+
+
+            <div class="page-content">
+                <div class="cart">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-9">
+                                @if ($items->count() > 0)
+                                    <table class="table table-cart table-mobile">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Total</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            @foreach ($items as $item)
+                                                <tr>
+                                                    <td class="product-col">
+                                                        <div class="product">
+                                                            <figure class="product-media">
+                                                                <a href="#">
+                                                                    <img src="{{ asset('uploads/products/thumbnails/' . ($item->model->image ?? 'default.png')) }}"
+                                                                        alt="Product image">
+                                                                </a>
+                                                            </figure>
+
+                                                            <h3 class="product-title">
+                                                                <a href="#">
+                                                                    <h5>{{ $item->name }}</h5>
+                                                                </a>
+                                                            </h3><!-- End .product-title -->
+                                                        </div>
+
+                                                    </td>
+                                                    <td class="price-col">₱{{ $item->price }}</td>
+                                                    <td>
+                                                        <div class="qty-control position-relative">
+                                                            <form method="POST"
+                                                                action="{{ route('cart.update', ['rowId' => $item->rowId]) }}"
+                                                                class="qty-control d-flex align-items-center">
+                                                                @csrf
+                                                                @method('PUT')
+
+                                                                <div class="cart-product-quantity">
+                                                                    <!-- Decrease -->
+                                                                    <button type="submit" name="action" value="decrease"
+                                                                        class="qty-control__reduce">-</button>
+
+                                                                    <!-- Quantity -->
+                                                                    <span class="qty-number">{{ $item->qty }}</span>
+
+                                                                    <!-- Increase -->
+                                                                    <button type="submit" name="action" value="increase"
+                                                                        class="qty-control__increase">+</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+
+                                                        <style>
+                                                            .cart-product-quantity {
+                                                                display: flex;
+                                                                align-items: center;
+                                                                justify-content: center;
+                                                                gap: 15px;
+                                                                border: 1px solid #ddd;
+
+                                                                padding: 5px 12px;
+                                                                min-width: 100px;
+                                                                text-align: center;
+                                                            }
+
+                                                            .qty-number {
+                                                                font-size: 16px;
+                                                                font-weight: 500;
+                                                                color: #333;
+                                                                min-width: 20px;
+                                                                text-align: center;
+                                                            }
+
+                                                            .qty-control__reduce,
+                                                            .qty-control__increase {
+                                                                background: none;
+                                                                border: none;
+                                                                padding: 0;
+                                                                cursor: pointer;
+                                                                font-size: 20px;
+
+                                                                color: #333;
+                                                                transition: color 0.2s;
+                                                            }
+
+                                                            .qty-control__reduce:hover,
+                                                            .qty-control__increase:hover {
+                                                                color: #000;
+                                                            }
+                                                        </style>
+
+                                                    </td>
+                                                    <td class="total-col">₱{{ $item->subtotal }}</td>
+                                                    <td class="remove-col">
+                                                        <form method="POST"
+                                                            action="{{ route('cart.item.remove', $item->rowId) }}">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn-remove"><i
+                                                                    class="icon-close"></i></button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    {{-- <div class="checkout-discount">
+                                        <form action="#">
+                                            <input type="text" class="form-control" required
+                                                id="checkout-discount-input">
+                                            <label for="checkout-discount-input" class="text-truncate discount-label">
+                                                Have a coupon? <span>Click here to enter your code</span>
+                                            </label>
+                                        </form>
+                                    </div> --}}
+
+                                    <div class="checkout-discount">
+                                        @if (!Session::has('coupon'))
+                                            {{-- Apply Coupon --}}
+                                            <form action="{{ route('cart.coupon.apply') }}" method="POST">
+                                                @csrf
+                                                <input type="text" class="form-control" name="coupon_code" required
+                                                    id="checkout-discount-input">
+                                                <label for="checkout-discount-input" class="text-truncate discount-label">
+                                                    Have a coupon? <span>Click here to enter your code</span>
+                                                </label>
+                                            </form>
+                                        @else
+                                            {{-- Remove Coupon --}}
+                                            <form action="{{ route('cart.coupon.remove') }}" method="POST">
                                                 @csrf
                                                 @method('DELETE')
-                                                <a href="javascript:void(0)" class="remove-cart">
-                                                    <svg width="10" height="10" viewBox="0 0 10 10" fill="#767676"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M0.259435 8.85506L9.11449 0L10 0.885506L1.14494 9.74056L0.259435 8.85506Z" />
-                                                        <path
-                                                            d="M0.885506 0.0889838L9.74057 8.94404L8.85506 9.82955L0 0.97449L0.885506 0.0889838Z" />
-                                                    </svg>
-                                                </a>
+                                                <div class="input-group">
+                                                    <input class="form-control" type="text"
+                                                        value="{{ Session::get('coupon')['code'] }} Applied!" readonly>
+
+
+                                                        <button class="btn btn-remove-code" type="submit">
+                                                            <i class="icon-close"></i> Remove
+                                                        </button>
+
+                                                </div>
+
                                             </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                        @endif
+                                    </div>
 
-                        <div class="cart-table-footer">
 
-                            @if (!Session::has('coupon'))
-                                <form action="{{ route('cart.coupon.apply') }}" method="POST"
-                                    class="position-relative bg-body">
-                                    @csrf
-                                    <input class="form-control" type="text" name="coupon_code" placeholder="Coupon Code"
-                                        value="">
-                                    <input class="btn-link fw-medium position-absolute top-0 end-0 h-100 px-4"
-                                        type="submit" value="APPLY COUPON">
-                                </form>
-                            @else
-                                <form action="{{ route('cart.coupon.remove') }}" method="POST"
-                                    class="position-relative bg-body">
-                                    @csrf
-                                    @method('DELETE')
-                                    <input class="form-control" type="text" name="coupon_code" placeholder="Coupon Code"
-                                        value="@if (Session::has('coupon')) {{ Session::get('coupon')['code'] }} Applied! @endif">
-                                    <input class="btn-link fw-medium position-absolute top-0 end-0 h-100 px-4"
-                                        type="submit" value="Remove COUPON">
-                                </form>
-                            @endif
-                            <form action="{{ route('cart.empty') }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-light">CLEAR CART</button>
-                            </form>
-                        </div>
-
-                        @if (Session::has('success'))
-                            <div>
-                                <p class="text-success">{{ Session::get('success') }}</p>
-                            </div>
-                        @elseif (Session::has('error'))
-                            <div>
-                                <p class="text-danger">{{ Session::get('error') }}</p>
-                            </div>
-                        @endif
-
-                    </div>
-
-                    <div class="shopping-cart__totals-wrapper">
-                        <div class="sticky-content">
-                            <div class="shopping-cart__totals">
-                                <h3>Cart Totals</h3>
-                                @if (Session::has('discounts'))
-                                    <table class="cart-totals">
-                                        <tbody>
-                                            <tr>
-                                                <th>Subtotal</th>
-                                                <td>₱{{ Cart::instance('cart')->subtotal() }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Discount ({{ Session::get('coupon')['code'] }})</th>
-                                                <td>₱{{ Session::get('discounts')['discount'] }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Subtotal after discount</th>
-                                                <td>₱{{ Session::get('discounts')['subtotal'] }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Shipping</th>
-                                                <td>Free</td>
-                                            </tr>
-                                            <tr>
-                                                <th>VAT</th>
-                                                <td>₱{{ Session::get('discounts')['tax'] }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Total</th>
-                                                <td>₱{{ Session::get('discounts')['total'] }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    @if (Session::has('success'))
+                                        <div class="text-success mt-2">{{ Session::get('success') }}</div>
+                                    @elseif (Session::has('error'))
+                                        <div class="text-danger mt-2">{{ Session::get('error') }}</div>
+                                    @endif
                                 @else
-                                    <table class="cart-totals">
-                                        <tbody>
-                                            <tr>
-                                                <th>Subtotal</th>
-                                                <td>₱{{ Cart::instance('cart')->subtotal() }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Shipping</th>
-                                                <td>Free</td>
-                                            </tr>
-                                            <tr>
-                                                <th>VAT</th>
-                                                <td>₱{{ Cart::instance('cart')->tax() }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Total</th>
-                                                <td>₱{{ Cart::instance('cart')->total() }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <div class="row">
+                                        <div class="col-md-12 d-flex justify-content-center">
+                                            <div class="text-center py-5" style="max-width: 400px; width: 100%;">
+                                                <p>No item's found in your cart</p>
+                                                <a href="{{ route('shop.index') }}"
+                                                    class="btn btn-outline-primary-2 btn-order w-10">
+                                                    Shop Now
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endif
                             </div>
 
-                            <div class="mobile_fixed-btn_wrapper">
-                                <div class="button-wrapper container">
-                                    <a href="{{ route('cart.checkout') }}" class="btn btn-primary btn-checkout">PROCEED TO
-                                        CHECKOUT</a>
+                            <aside class="col-lg-3">
+                                <div class="summary summary-cart">
+                                    <h3 class="summary-title">Cart Total</h3>
+
+                                    <table class="table table-summary">
+                                        <tbody>
+                                            <tr class="summary-subtotal">
+                                                <td>Subtotal:</td>
+                                                <td>₱{{ Cart::instance('cart')->subtotal() }}</td>
+                                            </tr>
+                                            @if (Session::has('discounts'))
+                                                <tr>
+                                                    <td>Discount ({{ Session::get('coupon')['code'] }}):</td>
+                                                    <td>₱{{ Session::get('discounts')['discount'] }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subtotal after discount:</td>
+                                                    <td>₱{{ Session::get('discounts')['subtotal'] }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>VAT:</td>
+                                                    <td>₱{{ Session::get('discounts')['tax'] }}</td>
+                                                </tr>
+                                                <tr class="summary-total">
+                                                    <td>Total:</td>
+                                                    <td>₱{{ Session::get('discounts')['total'] }}</td>
+                                                </tr>
+                                            @else
+                                                <tr>
+                                                    <td>Shipping fee:</td>
+                                                    <td>₱</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>VAT:</td>
+                                                    <td>₱{{ Cart::instance('cart')->tax() }}</td>
+                                                </tr>
+
+                                                <tr class="summary-total">
+                                                    <td>Total:</td>
+                                                    <td>₱{{ Cart::instance('cart')->total() }}</td>
+                                                </tr>
+                                            @endif
+                                        </tbody>
+                                    </table>
+
+                                    <a href="{{ route('cart.checkout') }}"
+                                        class="btn btn-outline-primary-2 btn-order btn-block mb-2">PROCEED TO CHECKOUT</a>
+                                    <a href="{{ route('shop.index') }}"
+                                        class="btn btn-outline-dark-2 btn-block "><span>CONTINUE SHOPPING</span><i
+                                            class="icon-refresh"></i></a>
                                 </div>
-                            </div>
+                            </aside>
                         </div>
                     </div>
-                @else
-                    <div class="row">
-                        <div class="col-md-12 text-center pt-5 pb-5">
-                            <p>No item found in your cart</p>
-                            <a href="{{ route('shop.index') }}" class="btn btn-info">Shop Now</a>
-                        </div>
-                    </div>
-                @endif
+                </div>
             </div>
+            <!-- End .page-content -->
 
         </section>
     </main>
@@ -253,3 +315,67 @@
         });
     </script>
 @endpush
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const input = document.getElementById("checkout-discount-input");
+        const label = document.querySelector(".discount-label");
+
+        function toggleLabel() {
+            if (input.value.trim() !== "") {
+                label.classList.add("hidden");
+            } else {
+                label.classList.remove("hidden");
+            }
+        }
+
+        input.addEventListener("focus", () => label.classList.add("hidden"));
+        input.addEventListener("blur", toggleLabel);
+        input.addEventListener("input", toggleLabel);
+
+        // Run once on load
+        toggleLabel();
+    });
+</script>
+<style>
+    /* Initial state */
+    .discount-label {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+        pointer-events: auto;
+    }
+
+    /* Hidden state */
+    .discount-label.hidden {
+        opacity: 0;
+        pointer-events: none;
+        /* prevent clicks on hidden label */
+    }
+
+    .btn-remove-code {
+        background-color: #e74c3c;
+        /* red for remove */
+        color: #fff;
+        border: none;
+        border-radius: 0 4px 4px 0;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.875rem;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-remove-code i {
+        font-size: 0.9rem;
+    }
+
+    .btn-remove-code:hover {
+        background-color: #c0392b;
+
+    }
+
+    .btn-remove-code:active {
+        background-color: #a93226;
+        transform: translateY(0);
+    }
+</style>

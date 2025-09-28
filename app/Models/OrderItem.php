@@ -9,6 +9,18 @@ class OrderItem extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'product_id',
+        'order_id',
+        'price',
+        'quantity',
+    ];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

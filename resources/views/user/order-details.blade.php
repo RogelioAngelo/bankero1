@@ -98,7 +98,7 @@
     }
   </style>
     <main class="pt-90" style="padding-top: 0px;">
-        <div class="mb-4 pb-4"></div>
+        <div class="mb-2"></div>
         <section class="my-account container">
             <h2 class="page-title">Order Details</h2>
             <div class="row">
@@ -163,52 +163,48 @@
                                 <h5>Ordered Items</h5>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th class="text-center">Price</th>
-                                        <th class="text-center">Quantity</th>
-                                        <th class="text-center">SKU</th>
-                                        <th class="text-center">Category</th>
-                                        <th class="text-center">Brand</th>
-                                        <th class="text-center">Options</th>
-                                        <th class="text-center">Return Status</th>
-                                        <th class="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($order->orderItems as $item)
-                                        <tr>
-                                            <td class="pname">
-                                                <div class="image">
-                                                    <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
-                                                        alt="{{ $item->product->name }}" class="image">
+                        <style>
+                            .order-items-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+                            .order-item-card { background: #fff; border: 1px solid #e6e6e6; border-radius: 12px; padding: 12px; display:flex; gap:12px; align-items:flex-start; }
+                            .order-item-media { width: 84px; height: 84px; flex-shrink:0; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+                            .order-item-media img { width:100%; height:100%; object-fit:cover; }
+                            .order-item-body { flex:1; display:flex; flex-direction:column; gap:6px; }
+                            .order-item-meta { display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:#666; }
+                            .order-item-actions { display:flex; gap:8px; align-items:center; }
+                            .line-price { font-weight:600; }
+                        </style>
+
+                        <div class="order-items-grid">
+                            @foreach ($orderItems as $item)
+                                <div class="order-item-card col-12">
+                                    <div class="order-item-media">
+                                        <img src="{{ asset('uploads/products/thumbnails/' . ($item->product->image ?? 'placeholder.png')) }}" alt="{{ $item->product->name ?? 'Product' }}">
+                                    </div>
+                                    <div class="order-item-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <a href="{{ isset($item->product) ? route('shop.product.details', ['product_slug' => $item->product->slug]) : '#' }}" target="_blank" class="h6 mb-1">{{ $item->product->name ?? 'Product' }}</a>
+                                                <div class="order-item-meta">
+                                                    <span>SKU: {{ $item->product->SKU ?? ($item->sku ?? '-') }}</span>
+                                                    <span>Qty: {{ $item->quantity }}</span>
+                                                    <span>Price: ${{ number_format((float)$item->price,2) }}</span>
+                                                    <span class="line-price">Line: ${{ number_format((float)$item->price * intval($item->quantity),2) }}</span>
                                                 </div>
-                                                <div class="name">
-                                                    <a href="{{ route('shop.product.details', ['product_slug' => $item->product->slug]) }}"
-                                                        target="_blank" class="body-title-2">{{ $item->product->name }}</a>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">${{ $item->price }}</td>
-                                            <td class="text-center">{{ $item->quantity }}</td>
-                                            <td class="text-center">{{ $item->product->SKU }}</td>
-                                            <td class="text-center">{{ $item->product->category->name }}</td>
-                                            <td class="text-center">{{ $item->product->brand->name }}</td>
-                                            <td class="text-center">{{ $item->options }}</td>
-                                            <td class="text-center">{{ $item->rstatus == 0 ? 'No' : 'Yes' }}</td>
-                                            <td class="text-center">
-                                                <div class="list-icon-function view-icon">
-                                                    <div class="item eye">
-                                                        <i class="icon-eye"></i>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                            </div>
+                                            <div class="order-item-actions text-end">
+                                                <div class="mb-2">{{ $item->rstatus == 0 ? 'Return: No' : 'Return: Yes' }}</div>
+                                                <a href="{{ route('user.order.details', ['order_id' => $order->id]) }}#item-{{ $item->id }}" class="btn btn-outline-secondary btn-sm" title="View item"><i class="icon-eye"></i></a>
+                                            </div>
+                                        </div>
+
+                                        <div class="order-item-meta mt-2">
+                                            <span>Category: {{ $item->product->category->name ?? '-' }}</span>
+                                            <span>Brand: {{ $item->product->brand->name ?? '-' }}</span>
+                                            <span>Options: {!! nl2br(e($item->options ?? '-')) !!}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
 
                         <div class="divider"></div>
@@ -275,6 +271,14 @@
                         </form>
                     </div>
                     @endif
+                    @if ($transaction && $transaction->status == 'pending' && ($order->payment_status ?? 'unpaid') != 'paid')
+                    <div class="wg-box mt-3 text-right">
+                        <form action="{{ route('order.settle', $order->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">Settle Payment</button>
+                        </form>
+                    </div>
+                    @endif
                 </div>
             </div>
         </section>
@@ -284,10 +288,11 @@
 @push('scripts')
 <script>
     $(function(){
-        $('.cancel-order').on('click',function(){
-            event.preventDefault();
+        $('.cancel-order').on('click',function(e){
+            e.preventDefault();
 
             var form = $(this).closest('form');
+
             swal({
                 title: "Are you sure?",
                 text: "You want to Cancel this Order?",
@@ -295,9 +300,13 @@
                 buttons:["No","Yes"],
                 confirmButtonColor:'#dc3545',
             }).then(function(result){
-                if(result){
+                // SweetAlert (v1) may return true/false; SweetAlert2 returns an object with isConfirmed
+                if (result === true || (result && result.isConfirmed)){
                     form.submit();
                 }
+            }).catch(function(err){
+                // ignore or log
+                console.error('Cancel dialog error', err);
             });
         });
     });

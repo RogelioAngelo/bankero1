@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // Exclude PayMongo webhook so external POSTs (from PayMongo) are accepted
+        'paymongo/webhook',
     ];
 }

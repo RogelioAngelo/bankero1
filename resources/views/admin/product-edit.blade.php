@@ -155,12 +155,27 @@
                                     <span class="icon">
                                         <i class="icon-upload-cloud"></i>
                                     </span>
-                                    <span class="text-tiny">Drop your images here or select <span class="tf-color">click
-                                            to browse</span></span>
-                                    <input type="file" id="gFile" name="images[]" accept="image/*"
-                                        multiple="">
+                                    <span class="text-tiny">
+                                        Drop your images here or select
+                                        <span class="tf-color">click to browse</span>
+                                    </span>
+                                    <input type="file" id="gFile" name="images[]" accept="image/*" multiple>
                                 </label>
                             </div>
+
+                            <script>
+                                document.getElementById("gFile").addEventListener("change", function() {
+                                    const count = this.files.length;
+
+                                    if (count > 4) {
+                                        alert("⚠️ You can only upload up to 4 images.");
+                                        this.value = ""; // reset input
+                                    } else if (count < 3 && count > 0) {
+                                        alert("⚠️ Please select at least 3 images at once.");
+                                        this.value = ""; // reset input
+                                    }
+                                });
+                            </script>
                         </div>
                     </fieldset>
                     @error('images')
@@ -180,7 +195,7 @@
                         <fieldset class="name">
                             <div class="body-title mb-10">Sale Price <span class="tf-color-1">*</span></div>
                             <input class="mb-10" type="text" placeholder="Enter sale price" name="sale_price"
-                                tabindex="0" value="{{ $product->sale_price }}" aria-required="true" required="">
+                                tabindex="0" value="{{ $product->sale_price }}" aria-required="true">
                         </fieldset>
                         @error('sale_price')
                             <span class="alert alert-danger text-center">{{ $message }} </span>
@@ -218,7 +233,8 @@
                                     <option value="instock" {{ $product->stock_status == 'instock' ? 'selected' : '' }}>
                                         InStock</option>
                                     <option value="outofstock"
-                                        {{ $product->stock_status == 'outofstock' ? 'selected' : '' }}>Out of Stock</option>
+                                        {{ $product->stock_status == 'outofstock' ? 'selected' : '' }}>Out of Stock
+                                    </option>
                                 </select>
                             </div>
                         </fieldset>
@@ -285,13 +301,12 @@
     </script> --}}
 
     <script>
-        $(function(){
-            $("#myFile").on("change",function(e){
+        $(function() {
+            $("#myFile").on("change", function(e) {
                 const photoInp = $("#myFile");
                 const [file] = this.files;
-                if(file)
-                {
-                    $("#imgpreview img").attr('src',URL.createObjectURL(file));
+                if (file) {
+                    $("#imgpreview img").attr('src', URL.createObjectURL(file));
                     $("#imgpreview").show();
                 }
             });
@@ -300,7 +315,9 @@
                 const photoInp = $("#gFile");
                 const gphotos = this.files;
                 $.each(gphotos, function(key, val) {
-                    $("#galUpload").prepend(`<div class="item gitems"><img src="${URL.createObjectURL(val)}" alt="Gallery Image" /></div>`);
+                    $("#galUpload").prepend(
+                        `<div class="item gitems"><img src="${URL.createObjectURL(val)}" alt="Gallery Image" /></div>`
+                    );
                 });
 
             });
@@ -310,6 +327,7 @@
                 $("input[name='slug']").val(StringToSlug($(this).val()));
             });
         })
+
         function StringToSlug(Text) {
             return Text.toLowerCase()
                 .replace(/[^\w ]+/g, "")

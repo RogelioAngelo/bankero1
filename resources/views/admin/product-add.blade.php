@@ -136,8 +136,8 @@
                         <div class="body-title mb-10">Upload Gallery Images</div>
                         <div class="upload-image mb-16">
                             <!-- <div class="item">
-            <img src="images/upload/upload-1.png" alt="">
-        </div>                                                 -->
+                <img src="images/upload/upload-1.png" alt="">
+            </div>                                                 -->
                             <div id="galUpload" class="item up-load">
                                 <label class="uploadfile" for="gFile">
                                     <span class="icon">
@@ -146,7 +146,7 @@
                                     <span class="text-tiny">Drop your images here or select <span class="tf-color">click
                                             to browse</span></span>
                                     <input type="file" id="gFile" name="images[]" accept="image/*"
-                                        multiple="">
+                                        multiple="4">
                                 </label>
                             </div>
                         </div>
@@ -165,9 +165,9 @@
                             <span class="alert alert-danger text-center">{{ $message }} </span>
                         @enderror
                         <fieldset class="name">
-                            <div class="body-title mb-10">Sale Price <span class="tf-color-1">*</span></div>
+                            <div class="body-title mb-10">Sale Price <span class="tf-color-1"></span></div>
                             <input class="mb-10" type="text" placeholder="Enter sale price" name="sale_price"
-                                tabindex="0" value="{{ old('sale_price') }}" aria-required="true" required="">
+                                tabindex="0" value="{{ old('sale_price') }}">
                         </fieldset>
                         @error('sale_price')
                             <span class="alert alert-danger text-center">{{ $message }} </span>
@@ -271,13 +271,12 @@
     </script> --}}
 
     <script>
-        $(function(){
-            $("#myFile").on("change",function(e){
+        $(function() {
+            $("#myFile").on("change", function(e) {
                 const photoInp = $("#myFile");
                 const [file] = this.files;
-                if(file)
-                {
-                    $("#imgpreview img").attr('src',URL.createObjectURL(file));
+                if (file) {
+                    $("#imgpreview img").attr('src', URL.createObjectURL(file));
                     $("#imgpreview").show();
                 }
             });
@@ -286,7 +285,9 @@
                 const photoInp = $("#gFile");
                 const gphotos = this.files;
                 $.each(gphotos, function(key, val) {
-                    $("#galUpload").prepend(`<div class="item gitems"><img src="${URL.createObjectURL(val)}" alt="Gallery Image" /></div>`);
+                    $("#galUpload").prepend(
+                        `<div class="item gitems"><img src="${URL.createObjectURL(val)}" alt="Gallery Image" /></div>`
+                        );
                 });
 
             });
@@ -296,6 +297,7 @@
                 $("input[name='slug']").val(StringToSlug($(this).val()));
             });
         })
+
         function StringToSlug(Text) {
             return Text.toLowerCase()
                 .replace(/[^\w ]+/g, "")

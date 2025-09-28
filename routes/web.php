@@ -4,13 +4,17 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ReviewReactionController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Middleware\AuthAdmin;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Termwind\Components\Hr;
-
+use App\Http\Controllers\PaymongoController;
+use App\Http\Controllers\PaymongoWebhookController;
+use App\Http\Controllers\CheckoutController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -23,11 +27,22 @@ use Termwind\Components\Hr;
 */
 
 
-Auth::routes();
+Route::get('/paymongo', [PaymongoController::class, 'index'])->name('paymongo.index');
+Route::post('/paymongo/create-payment', [PaymongoController::class, 'createPayment'])->name('paymongo.createPayment');
+
+// Webhook (PayMongo will POST here)
+// PayMongo will POST here (webhook)
+Route::post('/paymongo/webhook', [PaymongoWebhookController::class, 'handlePaymongoWebhook'])->name('paymongo.webhook');
+
+
+Auth::routes(['verify' => true]);
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
 Route::get('/shop',[ShopController::class,'index'])->name('shop.index');
 Route::get('/shop/{product_slug}',[ShopController::class,'product_details'])->name('shop.product.details');
+Route::get('/product/{slug}', [ShopController::class, 'show'])->name('product.details');
+
+
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 Route::get('/cart',[CartController::class,'index'])->name('cart.index');
@@ -36,6 +51,7 @@ Route::put('/cart/increase-quantity/{rowId}',[CartController::class,'increase_ca
 Route::put('/cart/decrease-quantity/{rowId}',[CartController::class,'decrease_cart_quantity'])->name('cart.qty.decrease');
 Route::delete('/cart/remove/{rowId}',[CartController::class,'remove_item'])->name('cart.item.remove');
 Route::delete('/cart/clear',[CartController::class,'empty_cart'])->name('cart.empty');
+Route::put('/cart/update/{rowId}', [CartController::class, 'update'])->name('cart.update');
 
 Route::post('/cart/apply-coupon',[CartController::class,'apply_coupon_code'])->name('cart.coupon.apply');
 Route::delete('/cart/remove-coupon',[CartController::class,'remove_coupon_code'])->name('cart.coupon.remove');
@@ -49,19 +65,32 @@ Route::post('/wishlist/move-to-cart/{rowId}',[WishlistController::class,'move_to
 
 Route::get('/checkout',[CartController::class,'checkout'])->name('cart.checkout');
 Route::post('/place-an-order',[CartController::class,'place_an_order'])->name('cart.place.an.order');
+Route::get('/transaction/{transaction}/status', [CartController::class, 'transactionStatus'])->name('transaction.status');
+
+// DEV: debug route to preview PayMongo payload without sending to PayMongo
+Route::get('/debug/paymongo-payload/{userId}', [App\Http\Controllers\CartController::class, 'debugPaymongoPayload'])
+    ->name('debug.paymongo.payload');
 Route::get('/order-confirmation',[CartController::class,'order_confirmation'])->name('cart.order.confirmation');
+// Public QR scan endpoint for buyers to confirm receipt
+Route::get('/order/verify/{token}', [CartController::class, 'scanQr'])->name('order.qr.scan');
 
 Route::get('/contact-us',[HomeController::class,'contact'])->name('home.contact');
 Route::post('/contact/store',[HomeController::class,'contact_store'])->name('home.contact.store');
 
 Route::get('/search',[HomeController::class,'search'])->name('home.search');
+Route::get('/search', [App\Http\Controllers\ShopController::class, 'search'])->name('shop.search');
 
-Route::middleware(['auth'])->group(function(){
+
+
+Route::middleware(['auth','verified'])->group(function(){
     Route::get('/account-dashboard', [UserController::class, 'index'])->name('user.index');
     Route::get('/account-orders', [UserController::class, 'orders'])->name('user.orders');
     Route::get('/account-order/{order_id}/details', [UserController::class, 'order_details'])->name('user.order.details');
+    Route::post('/order/{order}/settle', [CheckoutController::class, 'settleOrder'])->name('order.settle');
     Route::put('/account-order/cancel-order',[UserController::class,'order_canceled'])->name('user.order.cancel');
-
+    Route::post('/update-profile-photo', [UserController::class, 'updateProfilePhoto'])
+    ->name('user.updateProfilePhoto')
+    ->middleware('auth');
 });
 
 Route::middleware(['auth', AuthAdmin::class])->group(function(){
@@ -96,6 +125,8 @@ Route::middleware(['auth', AuthAdmin::class])->group(function(){
 
     Route::get('/admin/orders',[AdminController::class,'orders'])->name('admin.orders');
     Route::get('/admin/order/{order_id}/details',[AdminController::class,'order_details'])->name('admin.order.details');
+    Route::get('/admin/order/{order}/qr.png', [AdminController::class, 'qrImage'])->name('admin.order.qr.image');
+    Route::get('/admin/order/{order}/pack-slip.pdf', [AdminController::class, 'packSlip'])->name('admin.order.packslip');
     Route::put('/admin/order/update-statues',[AdminController::class,'update_order_status'])->name('admin.order.status.update');
 
     Route::get('/admin/slides', [AdminController::class,'slides'])->name('admin.slides');
@@ -112,6 +143,19 @@ Route::middleware(['auth', AuthAdmin::class])->group(function(){
 
     Route::get('/admin/order', [AdminController::class,'order_tracking'])->name('admin.order');
 
+    Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
+});
 
+Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
+Route::post('/review/{product_id}', [ReviewController::class, 'store'])->name('review.store');
+Route::get('/product/{id}/reviews/filter', [ReviewController::class, 'filter'])
+    ->name('reviews.filter');
+
+Route::post('/reviews/{review}/react', [ReviewReactionController::class, 'react'])->name('reviews.react')->middleware('auth');
+
+Route::middleware(['auth'])->prefix('reviews')->name('reviews.')->group(function () {
+    Route::get('{review}/edit', [ReviewController::class, 'edit'])->name('edit');
+    Route::put('{review}', [ReviewController::class, 'update'])->name('update');
+    Route::delete('{review}', [ReviewController::class, 'destroy'])->name('delete');
 });

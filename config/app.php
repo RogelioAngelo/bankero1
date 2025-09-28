@@ -69,7 +69,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Use the Philippines timezone so created_at / updated_at show local time
+    // (was 'UTC')
+    'timezone' => env('APP_TIMEZONE', 'Asia/Manila'),
 
     /*
     |--------------------------------------------------------------------------

@@ -191,6 +191,7 @@
                                     <th class="text-center">Tax</th>
                                     <th class="text-center">Total</th>
 
+                                    <th class="text-center">Payment</th>
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Order Date</th>
                                     <th class="text-center">Total Items</th>
@@ -207,6 +208,13 @@
                                     <td class="text-center">{{$order->subtotal}}</td>
                                     <td class="text-center">{{$order->tax}}</td>
                                     <td class="text-center">{{$order->total}}</td>
+                                    <td class="text-center">
+                                        @if (isset($order->payment_status) && $order->payment_status == 'paid')
+                                            <span class="badge bg-success">Paid</span>
+                                        @else
+                                            <span class="badge bg-secondary">Unpaid</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         @if ($order->status == 'delivered')
                                         <span class="badge bg-success">Delivered</span>
